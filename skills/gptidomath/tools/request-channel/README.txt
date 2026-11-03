@@ -26,7 +26,7 @@ Adjust these paths when using a custom state directory.
 
 Hooks remind after 15 minutes when a new Bash process starts or an IPython cell runs; an already
 running Bash shell is checked only when activated, so call `python3 channel.py due` at checkpoints there.
-Follow PROMPT-BLOCK.md for request checks. If hooks fail, keep checking at task checkpoints.
+The task file says when to check. If hooks fail, keep checking at task checkpoints.
 
 This is a local reminder, not a Drive reader or a timer that interrupts a model.
 Only the coordinator checks Drive; workers receive updates from the coordinator.

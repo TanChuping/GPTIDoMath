@@ -45,7 +45,7 @@ So "send by hand + Drive" keeps every feature, provided this agent session stays
 
 **Q3. Which language?** Openers exist in English and Chinese ([`openers/en`](openers/en), [`openers/zh`](openers/zh)); the task file says which language to answer in.
 
-**Q4. Extras.** The Pro ledger is recommended: ChatGPT does not show how many messages are left ([`tools/manuals/pro-ledger.md`](tools/manuals/pro-ledger.md)). For the Drive approval card, pick one helper: the GPT Voyager extension's opt-in auto-allow, Voyager CLI's `--approve-apps always`, this repository's [`tools/drive-auth-autoclick/`](tools/drive-auth-autoclick/), or clicking by hand.
+**Q4. Extras.** The Pro ledger is recommended: ChatGPT does not show how many messages are left ([`tools/manuals/pro-ledger.md`](tools/manuals/pro-ledger.md)). For the Drive approval card, pick one helper: the GPT Voyager extension's opt-in auto-allow, Voyager CLI's `--approve-apps always`, this repository's [`tools/drive-auth-autoclick/`](tools/drive-auth-autoclick/), or clicking by hand. Hooks: a reminder at session start that lists jobs still running, and one after each browser send to log it ([`tools/manuals/hooks.md`](tools/manuals/hooks.md)); recommended for Claude Code, and other shells can set up the same from the manual.
 
 Then set up what was chosen. Commands below run from this skill's folder (the one containing this file):
 
@@ -53,7 +53,8 @@ Then set up what was chosen. Commands below run from this skill's folder (the on
 2. Run `python3 tools/scripts/selftest_all.py`. Everything must pass. Fix or adapt the tools for this OS (each manual has an "Adapt it" section), then run it again.
 3. Drive route: create `AI-workspace/` with `repos/`, `tools/` and `tools/request-channel/` (a copy of [`tools/request-channel/`](tools/request-channel/)), and ask the user to connect Google Drive in ChatGPT's settings with the same Google account.
 4. Read the privacy section of [`tools/manuals/mirror.md`](tools/manuals/mirror.md) with the user. Agree what never leaves the machine (`export-ignore`, `redact`). Run `drive_mirror.py push --out <temp>` and show the user what would be uploaded before the first real push.
-5. Run one small trial end to end, for example "summarise the README and list three questions". To save Pro messages, the trial may use a cheaper model. Check that `test.txt`, the approval card, the request channel and `DONE.txt` all behave as the manuals say.
+5. If the user chose hooks, add them as [`tools/manuals/hooks.md`](tools/manuals/hooks.md) describes (back up the settings first) and run each hook command once by hand.
+6. Run one small trial end to end, for example "summarise the README and list three questions". To save Pro messages, the trial may use a cheaper model. Check that `test.txt`, the approval card, the request channel and `DONE.txt` all behave as the manuals say.
 
 ## 2. Is a job a good fit?
 
@@ -72,6 +73,8 @@ Good fits: auditing a whole subsystem, a cross-file survey, a design decision, a
 1. **Tag.** A short folder-safe name, new for each new conversation (`audit-net`, `audit-net-b` for a restart).
 2. **Task file.** Start from [`task/en/task-skeleton.md`](task/en/task-skeleton.md) (or `task/zh/`) and the project header ([`task/en/project-header.md`](task/en/project-header.md), filled once per project). Rules that matter:
    - The first screen says what to do in at most five lines.
+   - Keep the `BEGIN/END drive` and `BEGIN/END package` lines. The tools keep the parts for the route in use (the Drive parts teach mid-run changes, local-run requests and `DONE.txt`), drop every HTML comment, and refuse to write while a `{{NAME}}` is unfilled.
+   - Leave `{{PROJECT}}` and `{{COMMIT}}` as placeholders: `drive_workspace.py --repo` and `pack` fill them from what is actually published, so a reused task cannot carry an old commit.
    - Put **all** the work you want done before the next check into the list, then a backlog. Never write "this round only does X": it becomes the finish line. Under-filling is the usual mistake.
    - Explain purpose, criteria and trade-offs instead of issuing orders. A careful model turns "MUST/NEVER" into over-defensive work and late delivery.
    - Do not presuppose the answer: ask "judge whether X holds", not "confirm X".
@@ -82,12 +85,8 @@ Good fits: auditing a whole subsystem, a cross-file survey, a design decision, a
    - Drive: commit first, then `drive_mirror.py push` (add `--assets` for binaries) and wait for sync.
    - Package: `drive_mirror.py pack --task TASK.md --out send/`.
    - Anything the mirror does not contain (screenshots, data files, uncommitted work) goes into the task folder as plain files.
-4. **Workspace and message.** On Drive, `drive_workspace.py <tag> evidence --task TASK.md --preface task/en/preface.md --opener openers/en/<body>.md --footer openers/en/footer-drive.md --out message.md` creates the folder, writes `TASK.md` and prints the message ([`tools/manuals/workspace.md`](tools/manuals/workspace.md)). Use one of the opener bodies, or better, one the user wrote ([`openers/README.md`](openers/README.md)).
-5. **Before sending, check:**
-   - no `{{…}}` placeholders or comments are left;
-   - the commit named in `TASK.md` equals the mirror's;
-   - every folder the task names exists;
-   - the file is private-data clean.
+4. **Workspace and message.** On Drive, `drive_workspace.py <tag> evidence --task TASK.md --repo <repository> --preface task/en/preface.md --opener openers/en/<body>.md --footer openers/en/footer-drive.md --out message.md` creates the folder, writes `TASK.md` and prints the message. `--repo` fills `{{PROJECT}}` and `{{COMMIT}}` from the published mirror and stops if the mirror is behind the repository's HEAD (push it again). The command also refuses a task with unfilled placeholders ([`tools/manuals/workspace.md`](tools/manuals/workspace.md)). Use one of the opener bodies, or better, one the user wrote ([`openers/README.md`](openers/README.md)).
+5. **Before sending, check** what the tools cannot: every folder the task names exists, and the task text is private-data clean.
 6. **Send** on the chosen route. **Log every Pro message** in the ledger, follow-ups included.
 7. **Watch** ([`tools/manuals/watch.md`](tools/manuals/watch.md)). Start the delivery watcher with its `test.txt` start check and the stall watchdog as soon as the message is sent, and the local-run listener if requests are allowed. When one wakes you, handle it and start it again. Look at the chat about 5 minutes after sending (approval card), then every 30 minutes or so.
 8. **Steer and add work** ([`tools/manuals/interject.md`](tools/manuals/interject.md)). Writing to `REQUEST.md` costs no message. When stage ZIPs show steady progress and the list is running low, add more work. Do not add more after `DONE.txt` or a final delivery.
@@ -123,4 +122,4 @@ Known tendencies: line references and quotes are usually right, and judgements a
 | [`openers/`](openers/) | Opener bodies, continuation and restart, footers per route, how to write your own |
 | [`task/`](task/) | Preface, task skeleton, project header (English and Chinese) |
 | [`send/`](send/) | By hand, Voyager CLI, browser relay with troubleshooting |
-| [`tools/`](tools/) | Scripts, sandbox request channel, prompt blocks, manuals, Drive approval auto-click, Pro ledger |
+| [`tools/`](tools/) | Scripts, sandbox request channel, manuals, Drive approval auto-click, Pro ledger |

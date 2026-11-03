@@ -5,6 +5,7 @@ Keep this directory together. Local tools use Python 3.10+ and the standard libr
 - [`drive_mirror.py`](scripts/drive_mirror.py): publish a committed repository or build one upload package; [mirror manual](manuals/mirror.md).
 - [`code_index.py`](scripts/code_index.py): add an index to an unindexed source ZIP after checking required text; [mirror manual](manuals/mirror.md).
 - [`drive_workspace.py`](scripts/drive_workspace.py): create task folders, write task files, and render the short message; [workspace manual](manuals/workspace.md).
+- [`task_text.py`](scripts/task_text.py): keep one route's parts of a task, drop comments, refuse unfilled placeholders (used by `drive_workspace.py` and `pack`); [workspace manual](manuals/workspace.md).
 - [`drive_request.py`](scripts/drive_request.py): append a versioned instruction during a running task; [interjection manual](manuals/interject.md).
 - [`request-channel/`](request-channel/README.txt): install the sandbox checkpoint reminder; [interjection manual](manuals/interject.md).
 - [`web_ask.py`](scripts/web_ask.py): receive local-run requests and publish replies with attachments; [local-run manual](manuals/local-run.md).
@@ -17,6 +18,7 @@ Keep this directory together. Local tools use Python 3.10+ and the standard libr
 - [`selftest_all.py`](scripts/selftest_all.py): run every script's selftest, including the sandbox channel and `pro_ledger.py` when present; [workspace manual](manuals/workspace.md).
 - [`pro_ledger.py`](scripts/pro_ledger.py): track web messages and task status; [ledger manual](manuals/pro-ledger.md).
 - [`pro_send_hook.py`](scripts/pro_send_hook.py): optional local send-event ledger hook; [ledger manual](manuals/pro-ledger.md).
+- [`open_jobs_hook.py`](scripts/open_jobs_hook.py): optional session-start hook listing jobs that may still be running; [hooks manual](manuals/hooks.md).
 - [`drive-auth-autoclick/`](drive-auth-autoclick/README.md): optional browser extension for Drive approval cards; [extension manual](drive-auth-autoclick/README.md).
 
-Start with [workspace setup](manuals/workspace.md). Local settings belong in `~/.gptidomath/config.json`; [config.example.json](config.example.json) shows the three settings. Run `python scripts/selftest_all.py --selftest` before adapting the tools. The [local-run prompt block](prompt-blocks/local-run.md) and [interjection prompt block](request-channel/PROMPT-BLOCK.md) describe the two file channels. See [NOTICE.md](NOTICE.md) for included-code attribution.
+Start with [workspace setup](manuals/workspace.md). Local settings belong in `~/.gptidomath/config.json`; [config.example.json](config.example.json) shows the three settings. Run `python scripts/selftest_all.py --selftest` before adapting the tools. The task skeleton (`../task/`) tells the web side how to use the two file channels. See [NOTICE.md](NOTICE.md) for included-code attribution.

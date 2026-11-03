@@ -17,7 +17,7 @@
 | `footer-package-continue.md` | 同一对话，下一段题面作为附件上传。 |
 | `footer-github.md` | 题面在 GitHub 仓库里（作者没有实测过）。 |
 
-用工作区工具拼消息：它会去掉开头的注释，并填好 `{{WORKSPACE}}`、`{{TASK_FILE}}`、`{{ROUND}}`（见 [`../tools/manuals/workspace.md`](../tools/manuals/workspace.md)）。其余的 `{{…}}` 手动填。也可以自己把正文和结尾粘成一条消息。
+用工作区工具拼消息：它会去掉注释，并填好 `{{WORKSPACE}}`、`{{TASK_FILE}}`、`{{ROUND}}`（见 [`../tools/manuals/workspace.md`](../tools/manuals/workspace.md)）。还剩别的 `{{…}}` 时它会拒绝出消息，所以先手动填好。也可以自己把正文和结尾粘成一条消息。
 
 ## 自己写一份
 

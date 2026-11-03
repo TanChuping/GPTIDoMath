@@ -17,7 +17,7 @@ The message you send to ChatGPT Pro has two parts. The **opener** reads like the
 | `footer-package-continue.md` | Same conversation, next task file attached. |
 | `footer-github.md` | Task file in a GitHub repository (untested by the authors). |
 
-Assemble a message with the workspace tool, which strips the leading comments and fills `{{WORKSPACE}}`, `{{TASK_FILE}}` and `{{ROUND}}` (see [`../tools/manuals/workspace.md`](../tools/manuals/workspace.md)). Fill any other `{{…}}` by hand. You can also just paste body + footer into one message yourself.
+Assemble a message with the workspace tool, which strips the comments and fills `{{WORKSPACE}}`, `{{TASK_FILE}}` and `{{ROUND}}` (see [`../tools/manuals/workspace.md`](../tools/manuals/workspace.md)). It refuses a message with any other `{{…}}` left, so fill those by hand first. You can also just paste body + footer into one message yourself.
 
 ## Write your own
 

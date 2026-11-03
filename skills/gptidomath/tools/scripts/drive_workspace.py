@@ -6,14 +6,17 @@ import argparse
 import contextlib
 import io
 import os
-import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import drive_mirror
+from drive_mirror import current_mirror
 from kit_config import load_config, workspace_root
 from mirror_io import inside, safe_segment, write_atomic
+from task_text import finalize
 
 
 def task_directory(root: Path, tag: str) -> Path:
@@ -34,21 +37,9 @@ def subdirectory(task: Path, value: str) -> Path:
     return target
 
 
-def strip_leading_comments(text: str) -> str:
-    text = text.lstrip("\ufeff \t\r\n")
-    while text.startswith("<!--"):
-        end = text.find("-->")
-        if end < 0:
-            raise ValueError("Unclosed leading HTML comment in message template")
-        text = text[end + 3:].lstrip()
-    return text
-
-
 def render_message(opener: str, footer: str, workspace: str, task_file: str, round_number: int) -> str:
-    text = "\n\n".join(part for part in (strip_leading_comments(opener).strip(),
-                                         strip_leading_comments(footer).strip()) if part)
     values = {"WORKSPACE": workspace, "TASK_FILE": task_file, "ROUND": str(round_number)}
-    return re.sub(r"\{\{(WORKSPACE|TASK_FILE|ROUND)\}\}", lambda match: values[match[1]], text) + "\n"
+    return finalize(opener + "\n\n" + footer, "drive", values)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,6 +51,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--task", type=Path, help="UTF-8 task source")
     parser.add_argument("--round", type=int, help="Continuation number, starting at 2")
     parser.add_argument("--preface", type=Path, help="UTF-8 text to prepend to the task")
+    parser.add_argument("--repo", type=Path, help="Repository the task reads; fills {{PROJECT}} and {{COMMIT}} from its published mirror")
+    parser.add_argument("--name", help="Mirror name given to drive_mirror.py push --name (default: the repository folder name)")
     parser.add_argument("--opener", type=Path)
     parser.add_argument("--footer", type=Path)
     parser.add_argument("--out", type=Path, help="Also save the rendered message here")
@@ -73,6 +66,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--round must be 2 or greater; omit it for the first task")
     if args.preface and not args.task:
         parser.error("--preface requires --task")
+    if (args.repo or args.name) and not args.task:
+        parser.error("--repo and --name require --task")
+    if args.name and not args.repo:
+        parser.error("--name requires --repo")
     if bool(args.opener) != bool(args.footer):
         parser.error("--opener and --footer must be supplied together")
     if args.out and not args.opener:
@@ -105,6 +102,20 @@ def main(argv: list[str] | None = None) -> int:
             if args.preface:
                 preface = args.preface.read_text(encoding="utf-8-sig").strip()
                 body = (preface + "\n\n" if preface else "") + body
+            values = {"WORKSPACE": f"{config['workspace_name']}/{args.tag}",
+                      "WORKSPACE_ROOT": config["workspace_name"], "TASK_FILE": task_file}
+            if args.repo:
+                project, commit, dirty = current_mirror(args.repo, args.name, config)
+                values.update(PROJECT=project, COMMIT=commit)
+                print(f"MIRROR {project} {commit[:10]}", file=sys.stderr)
+                if dirty:
+                    print(f"NOTE {dirty} uncommitted change(s) are not in the mirror", file=sys.stderr)
+            try:
+                body = finalize(body, "drive", values)
+            except ValueError as exc:
+                if args.repo or "{{COMMIT}}" not in str(exc):
+                    raise
+                raise ValueError(f"{exc}. Pass --repo to fill {{{{PROJECT}}}} and {{{{COMMIT}}}} from the published mirror") from None
         message = None
         if args.opener:
             message = render_message(args.opener.read_text(encoding="utf-8-sig"),
@@ -160,6 +171,39 @@ def selftest() -> int:
             assert out.read_text(encoding="utf-8") == "Read Research/demo/TASK.md.\n\nRound 1.\n"
             assert "private drafting note" not in stdout.getvalue()
             assert main(["demo", "--task", str(task), "--round", "2"]) == 0
+            routed = root / "routed.md"
+            routed.write_text("<!-- agent note -->\n<!-- BEGIN drive -->\nWrite {{WORKSPACE}}/DONE.txt from {{WORKSPACE_ROOT}}/tools.\n"
+                              "<!-- END drive -->\n<!-- BEGIN package -->\nRead repo/.\n<!-- END package -->\n", encoding="utf-8")
+            assert main(["routed", "--task", str(routed)]) == 0
+            assert (workspace / "routed" / "TASK.md").read_text(encoding="utf-8") == "Write Research/routed/DONE.txt from Research/tools.\n"
+            unfilled = root / "unfilled.md"
+            unfilled.write_text("# {{TITLE}}\n", encoding="utf-8")
+            assert main(["never", "--task", str(unfilled)]) == 2
+            assert not (workspace / "never").exists()
+            opener.write_text("Read {{WORKSPACE}} for {{REPO}}.", encoding="utf-8")
+            assert main(["never", "--opener", str(opener), "--footer", str(footer)]) == 2
+            assert not (workspace / "never").exists()
+
+            repo = root / "repo"
+            repo.mkdir()
+            for command in (["init", "-q"], ["config", "core.autocrlf", "false"], ["config", "user.email", "t@example.invalid"],
+                            ["config", "user.name", "Workspace Test"]):
+                subprocess.run(["git", "-C", str(repo), *command], check=True, capture_output=True)
+            (repo / "main.py").write_text("print('one')\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "add", "."], check=True, capture_output=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "one"], check=True, capture_output=True)
+            mirrored = root / "mirrored.md"
+            mirrored.write_text("Read {{WORKSPACE_ROOT}}/repos/{{PROJECT}}/ at `{{COMMIT}}`.\n", encoding="utf-8")
+            assert main(["mirrored", "--task", str(mirrored)]) == 2, "no --repo: {{COMMIT}} stays unfilled"
+            assert main(["mirrored", "--task", str(mirrored), "--repo", str(repo), "--name", "proj"]) == 2, "not pushed yet"
+            assert drive_mirror.main(["push", "--repo", str(repo), "--name", "proj"]) == 0
+            head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+            assert main(["mirrored", "--task", str(mirrored), "--repo", str(repo), "--name", "proj"]) == 0
+            assert (workspace / "mirrored" / "TASK.md").read_text(encoding="utf-8") == f"Read Research/repos/proj/ at `{head}`.\n"
+            (repo / "main.py").write_text("print('two')\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "commit", "-qam", "two"], check=True, capture_output=True)
+            assert main(["stale", "--task", str(mirrored), "--repo", str(repo), "--name", "proj"]) == 2, "mirror is behind HEAD"
+            assert not (workspace / "stale").exists()
             assert (workspace / "demo" / "TASK-2.md").is_file()
             assert main(["demo", "evidence/nested", "--check"]) == 0
             for tag in ("..", "repos", "tools", "../escape"):
@@ -171,7 +215,7 @@ def selftest() -> int:
             before = published.read_bytes()
             assert main(["demo", "--task", str(published), "--preface", str(preface)]) == 2
             assert published.read_bytes() == before
-    print("selftest PASS: drive_workspace (check, task, round, templates, path boundaries)")
+    print("selftest PASS: drive_workspace (check, task, round, routes, placeholders, mirror commit, templates, path boundaries)")
     return 0
 
 

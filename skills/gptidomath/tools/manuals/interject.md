@@ -8,7 +8,7 @@
 
 User actions: connect Google Drive in the remote conversation, install/configure your sync client, create a local `AI-workspace` folder, and approve the first write when asked. Your agent sets `workspace` in `~/.gptidomath/config.json` to that existing folder, or uses `GPTIDOMATH_WORKSPACE`; `--config` and `GPTIDOMATH_CONFIG` select another JSON configuration. The default workspace name is `AI-workspace`.
 
-Your agent creates the task folder locally, shares `request-channel/` in the tools folder, and includes its PROMPT-BLOCK.md with `{{TOOLS}}` and `{{WORKSPACE}}` replaced by remote paths. The remote coordinator installs the reminder only in its temporary sandbox. It checks at task start, before delegation/integration/major decisions, at safe checkpoints when the 15-minute reminder is due, and before delivery. Workers do not independently poll Drive.
+Your agent creates the task folder locally, shares `request-channel/` in the tools folder, and keeps the task skeleton's "Changes while you work" section, whose paths `drive_workspace.py` fills in. The remote coordinator installs the reminder only in its temporary sandbox. It checks at task start, before delegation/integration/major decisions, at safe checkpoints when the 15-minute reminder is due, and before delivery. Workers do not independently poll Drive.
 
 ## End-to-end dry run
 

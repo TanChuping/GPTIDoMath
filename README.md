@@ -27,7 +27,7 @@ English | [简体中文](README.zh-CN.md)
 | Part | What it does |
 |---|---|
 | **Math openers** ([`openers/`](skills/gptidomath/openers/)) | Four example openers (spectral theory, directed topology, statistical physics, logic and rewriting), plus a continuation and a restart, in English and Chinese, with footers for each route. They look like a big, hard, valuable research problem and contain no task at all. You are encouraged to write your own. |
-| **Task skeleton** ([`task/`](skills/gptidomath/task/)) | The real prompt: what to do, full work list, subagents, the 70-minute schedule, delivery format. Starts with a short note telling the model that the opener was a framing and this file is the task. |
+| **Task skeleton** ([`task/`](skills/gptidomath/task/)) | The real prompt: what to do, full work list, subagents, the 70-minute schedule, delivery format, and on the Drive route how to take changes mid-run and ask your machine to run things. Starts with a short note telling the model that the opener was a framing and this file is the task. |
 | **Repository mirror** | One command publishes your last commit to Google Drive (or into one upload-ready zip), with a file and symbol index and automatic redaction of recognisable private data. |
 | **Request channel** | You add or change requirements while the job runs by writing a file. No new message, no extra quota. |
 | **Local-run requests** | The web side asks your computer to run what its sandbox cannot (GPU, real device, your OS), and keeps working while it waits. |
@@ -116,8 +116,8 @@ skills/gptidomath/
   openers/      math openers, continuation, restart, footers; how to write your own
   task/         preface, task skeleton, project header (en, zh)
   send/         by hand, Voyager CLI, browser relay (with troubleshooting)
-  tools/        scripts, sandbox request channel, prompt blocks, manuals,
-                Drive approval auto-click, Pro ledger
+  tools/        scripts, sandbox request channel, manuals,
+                Drive approval auto-click, Pro ledger, agent hooks
 ```
 
 ## Disclaimer

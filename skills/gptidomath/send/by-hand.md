@@ -17,7 +17,7 @@ The simplest setup, with nothing to install. Your agent builds one zip with the 
 
 **You give up:** steering a running job, local-run requests and automatic wake-up (there is no shared folder). Every follow-up needs a new upload, and big binaries make uploads slow or exceed ChatGPT's file limits.
 
-1. **Your agent writes `TASK.md`** from [`../task/en/task-skeleton.md`](../task/en/task-skeleton.md). It uses the package variant of "Material and setup", deletes the request-channel, local-run and `DONE.txt` lines, and puts [`../task/en/preface.md`](../task/en/preface.md) on top.
+1. **Your agent writes `TASK.md`** from [`../task/en/task-skeleton.md`](../task/en/task-skeleton.md). It leaves the `BEGIN/END drive` and `BEGIN/END package` lines in place (`pack` keeps the package parts and drops the Drive-only ones: request channel, local runs, `DONE.txt`) and puts [`../task/en/preface.md`](../task/en/preface.md) on top.
 2. **Your agent builds the package:**
    ```sh
    python3 <skill>/tools/scripts/drive_mirror.py pack --repo . --task TASK.md --out ./send

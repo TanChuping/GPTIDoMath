@@ -28,6 +28,7 @@ from code_index import EXT_KIND, build as index_build, verify as index_verify
 from secret_patterns import RULES_VERSION, Redactor, local_identities
 from mirror_io import copy_atomic, inside, safe_segment, write_atomic, sha256, held
 from kit_config import load_config, workspace_root
+from task_text import finalize
 
 CHUNK = 200_000_000  # Local binary ZIP volume limit in bytes.
 TEXT_MAX = 250 * 2 ** 20  # Maximum text ZIP size.
@@ -380,13 +381,29 @@ def status(repo: Path, name: str | None, out_dir: Path | None = None, settings: 
     dest = Path(out_dir) if out_dir is not None else mirror_dir(repo, name, settings)
     head = git(repo, "rev-parse", "HEAD").strip()
     manifest = read_mirror(dest)
-    layer = (manifest.get("layers") or {}).get("text") or {}
-    ok = manifest.get("project") == name and layer.get("commit") == head and layer_ok(dest, layer)
+    ok = text_layer_current(dest, manifest, name, head)
     print(f"{dest}: {'up to date' if ok else 'missing, outdated, or damaged'}; HEAD {head[:10]}")
     binary = (manifest.get("layers") or {}).get("bin")
     if binary and (binary.get("same_as_text_commit") is False or not layer_ok(dest, binary)):
         print("Binary layer differs or is damaged; use push --assets")
     return 0 if ok else 1
+
+
+def text_layer_current(dest: Path, manifest: dict, name: str, head: str) -> bool:
+    layer = (manifest.get("layers") or {}).get("text") or {}
+    return manifest.get("project") == name and layer.get("commit") == head and layer_ok(dest, layer)
+
+
+def current_mirror(repo: Path, name: str | None = None, settings: dict | None = None) -> tuple[str, str, int]:
+    """(project, commit, uncommitted changes) for a repository whose published mirror matches HEAD."""
+    repo = repo_root(repo)
+    name = safe_segment(repo.name if name is None else name, "--name")
+    dest = mirror_dir(repo, name, settings)
+    head = git(repo, "rev-parse", "HEAD").strip()
+    if not text_layer_current(dest, read_mirror(dest), name, head):
+        raise ValueError(f"the mirror in {dest} is missing, outdated or damaged (HEAD {head[:10]}); "
+                         "run drive_mirror.py push first")
+    return name, head, len(git(repo, "status", "--porcelain").splitlines())
 
 
 def pack(repo: Path, name: str | None, task: Path, out_dir: Path, assets: bool = False,
@@ -396,13 +413,18 @@ def pack(repo: Path, name: str | None, task: Path, out_dir: Path, assets: bool =
     name = safe_segment(repo.name if name is None else name, "--name")
     settings = load_config() if settings is None else settings
     red = Redactor(local_identities(repo) if identities is None else identities, settings.get("redact", []))
-    task_scan = red.scan("TASK.md", Path(task).read_bytes())
+    try:
+        task_text = Path(task).read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        raise ValueError("TASK.md must be UTF-8 text") from None
+    head = git(repo, "rev-parse", "HEAD").strip()
+    task_text = finalize(task_text, "package", {"TASK_FILE": "TASK.md", "PROJECT": name, "COMMIT": head})
+    task_scan = red.scan("TASK.md", task_text.encode("utf-8"))
     if task_scan.kind != "text":
         raise ValueError("TASK.md must be readable text without an incomplete private key")
     target = Path(out_dir) / f"{name}-package.zip"
     if Path(task).resolve() == target.resolve():
         raise ValueError("--task must differ from the package output path")
-    head = git(repo, "rev-parse", "HEAD").strip()
     with held(target, "package", LOCK_TIMEOUT), tempfile.TemporaryDirectory(prefix="mirror-pack-") as td:
         temporary = Path(td)
         result = build(repo, name, head, temporary, red, True, assets)
@@ -581,19 +603,27 @@ def selftest() -> int:
                 checks += _expect_error(lambda: push(repo, bad, False, False, never / "out", settings, identities), "--name")
             check(not never.exists() and not (root / "escape-text.zip").exists())
             task = root / "TASK.md"
-            task.write_text("Inspect the committed implementation.\n", encoding="utf-8-sig")
+            task.write_text("<!-- agent note -->\nInspect the committed implementation.\n<!-- BEGIN drive -->\n"
+                            "Write {{WORKSPACE}}/DONE.txt.\n<!-- END drive -->\n<!-- BEGIN package -->\nRead repo/ of {{PROJECT}} at {{COMMIT}}.\n"
+                            "<!-- END package -->\n", encoding="utf-8-sig")
             package_dir = root / "packages"
             check(pack(repo, "sample", task, package_dir, True, settings, identities) == 0)
             with zipfile.ZipFile(package_dir / "sample-package.zip") as archive:
                 check({"TASK.md", "repo/src/sample.py", "repo/one.png", "INDEX/INDEX-files.tsv",
                        "_mirror/MIRROR.json", "_mirror/STAMP.json"} <= set(archive.namelist()))
                 check(len(archive.namelist()) == len(set(archive.namelist())))
-                check(archive.read("TASK.md") == task.read_bytes())
+                check(archive.read("TASK.md") == ("Inspect the committed implementation.\nRead repo/ of sample at "
+                                                  + git(repo, "rev-parse", "HEAD").strip() + ".\n").encode())
                 check(json.loads(archive.read("_mirror/MIRROR.json"))["commit"] == git(repo, "rev-parse", "HEAD").strip())
                 check(b"repo/src/sample.py" in archive.read("INDEX/INDEX-functions.tsv"))
             check(pack(repo, "text-only", task, package_dir, False, settings, identities) == 0)
             with zipfile.ZipFile(package_dir / "text-only-package.zip") as archive:
                 check("repo/one.png" not in archive.namelist())
+            unfilled = root / "TASK-unfilled.md"
+            unfilled.write_text("Read {{WORKSPACE}}/REQUEST.md.\n", encoding="utf-8")
+            checks += _expect_error(lambda: pack(repo, "unfilled", unfilled, package_dir, False, settings, identities),
+                                    "unfilled placeholders")
+            check(not (package_dir / "unfilled-package.zip").exists())
             input_target = package_dir / "input-package.zip"
             input_bytes = b"This task must not be overwritten.\n"
             input_target.write_bytes(input_bytes)

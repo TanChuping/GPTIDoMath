@@ -13,7 +13,6 @@ The following files include code adapted from [Voyager CLI contrib/web-pro-kit](
 - `request-channel/channel.py`
 - `request-channel/README.txt`
 - `request-channel/VERSION`
-- `request-channel/PROMPT-BLOCK.md`
 
 MIT License
 

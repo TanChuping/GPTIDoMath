@@ -2,7 +2,7 @@
 
 ## Principle
 
-The remote coordinator writes numbered requests in `requestfromweb.txt`; your local agent reviews each request, runs appropriate authorized work, and publishes a numbered reply. `web_ask.py` transfers messages and files only. It never executes a command found in a request. Use prompt-blocks/local-run.md in the task prompt.
+The remote coordinator writes numbered requests in `requestfromweb.txt`; your local agent reviews each request, runs appropriate authorized work, and publishes a numbered reply. `web_ask.py` transfers messages and files only. It never executes a command found in a request. The task skeleton's "Asking us to run something" section tells the web side the format.
 
 ## Setup
 

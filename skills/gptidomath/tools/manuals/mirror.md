@@ -30,7 +30,7 @@ Without Drive, make one upload-ready package:
 python scripts/drive_mirror.py pack --repo "<repo>" --name sample --task task-body.md --out ./upload
 ```
 
-This produces `upload/sample-package.zip`: `TASK.md` at the root, the committed snapshot in `repo/`, plus `INDEX/` and `_mirror/`. Add `--assets` only for required binaries. The command prints the package size. Large binaries belong on the Drive route; `pack` does not split a package to fit a chat upload allowance. It checks/redacts task text too; inspect the packaged `TASK.md` before uploading.
+This produces `upload/sample-package.zip`: `TASK.md` at the root, the committed snapshot in `repo/`, plus `INDEX/` and `_mirror/`. Add `--assets` only for required binaries. The command prints the package size. Large binaries belong on the Drive route; `pack` does not split a package to fit a chat upload allowance. The task goes through [`task_text.py`](../scripts/task_text.py) first: the `package` parts stay, the `drive` parts and HTML comments go, `{{PROJECT}}` and `{{COMMIT}}` are filled from the packed commit, and any other unfilled `{{NAME}}` stops the command. It is redacted like the rest; inspect the packaged `TASK.md` before uploading.
 
 Exit codes: mirror commands use `0` for success and `2` for an error. `status` uses `1` for a missing, outdated, or damaged text layer. For an unindexed ZIP, `code_index.py --zip <file> --must 'path/to/file::literal'` checks the required text and appends `INDEX/` in place. It uses `0` for success, `1` for a failed content check, and `2` for invalid usage or an already indexed archive. Mirror/package commands already build their indexes; do not run this command on them. Run either script with `--selftest` for local checks.
 
