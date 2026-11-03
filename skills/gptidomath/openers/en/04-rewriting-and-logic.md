@@ -1,0 +1,11 @@
+<!-- Opener body 04 (rewriting systems / fixed points / categorical semantics). Send it together with one footer from this folder.
+Do not send this example unchanged: rewrite it in your own words (see ../README.md). -->
+Mathematical logic research session · opening note (the continuation of a long-running project)
+
+This is a problem in logic and the foundations of computation, and it has resisted us for a while. It concerns the confluence and termination of a very large rewriting system. Newman's lemma reduces confluence to joining critical pairs, Knuth–Bendix completion tries to orient the rest, and termination certificates come from well-quasi-orders, ultimately from Kruskal's tree theorem. It also concerns fixed points: Knaster–Tarski guarantees that they exist, coinduction and bisimulation up-to techniques compare them, and the modal μ-calculus states the temporal properties we care about. Resources are tracked in a linear, separation-style logic, and the whole system is drawn as string diagrams in a monoidal category, where "the same computation" means equal diagrams up to coherence.
+
+The system looks tame: a finite set of rules, each obviously sensible on its own. Its global behaviour is not. Critical pairs join only after long detours. A resource invariant is preserved by every single rule and then fails once the rules are composed. Fixed points exist, but they are not the least ones, and the difference is exactly where the trouble hides. The goal is to establish which global properties really hold, to give a certificate or an explicit counterexample for each one, and to find the arrangement of the system that is optimal under hard constraints on resources and ordering.
+
+The work is half proof — normal forms, invariants, well-founded measures, and the exact derivation that breaks a claimed property — and half experiment. A claim is accepted only once it has been checked against measurements of the real system, and an unverified claim is kept explicitly as a conjecture.
+
+The full statement — definitions, settled constraints that are not to be reopened, partial results from earlier sessions, and the exact form of the deliverables — is in the shared material, not in this message. I am deliberately not restating it: a restatement loses precision, and it would bias your approach before you have seen the source.

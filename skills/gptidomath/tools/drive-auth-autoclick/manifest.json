@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Google Drive approval auto-click",
+  "version": "1.0.0",
+  "description": "Delay and click Always allow on recognized Google Drive approval cards in ChatGPT.",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*"
+      ],
+      "js": [
+        "autoclick.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
