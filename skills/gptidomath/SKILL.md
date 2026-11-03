@@ -103,7 +103,7 @@ Good fits: auditing a whole subsystem, a cross-file survey, a design decision, a
 - **The web side can ask for help.** When something needs this machine, it writes `requestfromweb.txt` and keeps working while you answer in `reply.txt`.
 - **Subagents multiply the work per message.** The task asks for as many as allowed, plus one reviewer that only reviews. In our runs at most three ran at once.
 
-Observed in our runs, with no guarantee: the longest single session was about 6 hours, and 2–4 hours is typical. Occasionally a session still drops at around 70 minutes. A read-heavy job with subagents went through roughly 200,000 lines of code in one message. Other users of the same flow report a 20-hour session and 7 concurrent subagents; we have not reproduced either.
+Observed in our runs, with no guarantee: the longest single session was nearly 8 hours (7 h 47 min on one message), and 2–4 hours is typical. Occasionally a session still drops at around 70 minutes. A read-heavy job with subagents went through roughly 200,000 lines of code in one message. Other users of the same flow report a 20-hour session and 7 concurrent subagents; we have not reproduced either.
 
 ## 5. Checking the result
 
