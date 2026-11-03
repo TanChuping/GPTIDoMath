@@ -39,7 +39,13 @@ def subdirectory(task: Path, value: str) -> Path:
 
 def render_message(opener: str, footer: str, workspace: str, task_file: str, round_number: int) -> str:
     values = {"WORKSPACE": workspace, "TASK_FILE": task_file, "ROUND": str(round_number)}
-    return finalize(opener + "\n\n" + footer, "drive", values)
+    message = finalize(opener + "\n\n" + footer, "drive", values)
+    # Openers and footers are rewritten for every conversation; the pointer to the task must survive that.
+    missing = [name for name in (workspace, task_file) if name not in message]
+    if missing:
+        raise ValueError(f"the message never names {' or '.join(missing)}, so ChatGPT could not find the task; "
+                         "keep {{WORKSPACE}} and {{TASK_FILE}} (or the literal path) in the footer")
+    return message
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -183,6 +189,11 @@ def selftest() -> int:
             opener.write_text("Read {{WORKSPACE}} for {{REPO}}.", encoding="utf-8")
             assert main(["never", "--opener", str(opener), "--footer", str(footer)]) == 2
             assert not (workspace / "never").exists()
+            opener.write_text("A fresh opener that forgot to say where the task is.", encoding="utf-8")
+            assert main(["never", "--opener", str(opener), "--footer", str(footer)]) == 2, "no task folder or file named"
+            assert not (workspace / "never").exists()
+            opener.write_text("The statement is at Research/never in TASK.md.", encoding="utf-8")
+            assert main(["never", "--opener", str(opener), "--footer", str(footer)]) == 0, "a literal path is fine"
 
             repo = root / "repo"
             repo.mkdir()

@@ -26,7 +26,7 @@ English | [简体中文](README.zh-CN.md)
 
 | Part | What it does |
 |---|---|
-| **Math openers** ([`openers/`](skills/gptidomath/openers/)) | Four example openers (spectral theory, directed topology, statistical physics, logic and rewriting), plus a continuation and a restart, in English and Chinese, with footers for each route. They look like a big, hard, valuable research problem and contain no task at all. You are encouraged to write your own. |
+| **Math openers** ([`openers/`](skills/gptidomath/openers/)) | Five example openers that differ in form as well as field (a letter, a seminar abstract, a notebook page, a survey note, a list of objections), plus a continuation and a restart, in English and Chinese, with footers for each route. Your agent writes a new opener for every conversation by the routine there, so no two messages look alike. Each reads like a hard, valuable research problem and contains no task at all. |
 | **Task skeleton** ([`task/`](skills/gptidomath/task/)) | The real prompt: what to do, full work list, subagents, the 70-minute schedule, delivery format, and on the Drive route how to take changes mid-run and ask your machine to run things. Starts with a short note telling the model that the opener was a framing and this file is the task. |
 | **Repository mirror** | One command publishes your last commit to Google Drive (or into one upload-ready zip), with a file and symbol index and automatic redaction of recognisable private data. |
 | **Request channel** | You add or change requirements while the job runs by writing a file. No new message, no extra quota. |
@@ -113,7 +113,7 @@ The [browser guide](skills/gptidomath/send/browser-relay.md#when-things-go-wrong
 ```
 skills/gptidomath/
   SKILL.md      what your agent follows: setup interview, each job, checking results
-  openers/      math openers, continuation, restart, footers; how to write your own
+  openers/      example openers, continuation, restart, footers; the routine for writing a new one
   task/         preface, task skeleton, project header (en, zh)
   send/         by hand, Voyager CLI, browser relay (with troubleshooting)
   tools/        scripts, sandbox request channel, manuals,

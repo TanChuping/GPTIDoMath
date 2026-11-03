@@ -7,7 +7,7 @@ description: Hand a large, self-contained job (code audit, survey, spec, patch d
 
 ChatGPT Pro on the web is billed per message, not per token, and one message can keep working for hours with its own Linux sandbox and subagents. This skill helps you, the user's agent, get the most out of each message:
 
-- The **message** is a mathematical-research opener plus a short fixed footer ([`openers/`](openers/)).
+- The **message** is a mathematical-research opener, written new for each conversation, plus a short footer with the opening steps ([`openers/`](openers/)).
 - The **real task** waits in a file, `TASK.md`, written from [`task/`](task/) and placed on Google Drive, in an uploaded package, or in a repository.
 - **Tools** ([`tools/`](tools/)) publish the repository, create the task folder, steer a running job without a new message, let the web side ask this machine to run things, wake you on delivery or stall, count Pro messages, and answer the Drive approval card.
 
@@ -43,7 +43,7 @@ Then tell the user plainly what their combination supports. Who sends does not m
 
 So "send by hand + Drive" keeps every feature, provided this agent session stays open while the job runs. If the user closes it, steering waits until they reopen it, local-run requests go unanswered (the web side lists them in its notes and carries on), and nobody is woken.
 
-**Q3. Which language?** Openers exist in English and Chinese ([`openers/en`](openers/en), [`openers/zh`](openers/zh)); the task file says which language to answer in.
+**Q3. Which language?** Example openers and footers exist in English and Chinese ([`openers/en`](openers/en), [`openers/zh`](openers/zh)); each opener is written new in the chosen language, and the task file says which language to answer in.
 
 **Q4. Extras.** The Pro ledger is recommended: ChatGPT does not show how many messages are left ([`tools/manuals/pro-ledger.md`](tools/manuals/pro-ledger.md)). For the Drive approval card, pick one helper: the GPT Voyager extension's opt-in auto-allow, Voyager CLI's `--approve-apps always`, this repository's [`tools/drive-auth-autoclick/`](tools/drive-auth-autoclick/), or clicking by hand. Hooks: a reminder at session start that lists jobs still running, and one after each browser send to log it ([`tools/manuals/hooks.md`](tools/manuals/hooks.md)); recommended for Claude Code, and other shells can set up the same from the manual.
 
@@ -85,9 +85,9 @@ Good fits: auditing a whole subsystem, a cross-file survey, a design decision, a
    - Drive: commit first, then `drive_mirror.py push` (add `--assets` for binaries) and wait for sync.
    - Package: `drive_mirror.py pack --task TASK.md --out send/`.
    - Anything the mirror does not contain (screenshots, data files, uncommitted work) goes into the task folder as plain files.
-4. **Workspace and message.** On Drive, `drive_workspace.py <tag> evidence --task TASK.md --repo <repository> --preface task/en/preface.md --opener openers/en/<body>.md --footer openers/en/footer-drive.md --out message.md` creates the folder, writes `TASK.md` and prints the message. `--repo` fills `{{PROJECT}}` and `{{COMMIT}}` from the published mirror and stops if the mirror is behind the repository's HEAD (push it again). The command also refuses a task with unfilled placeholders ([`tools/manuals/workspace.md`](tools/manuals/workspace.md)). Use one of the opener bodies, or better, one the user wrote ([`openers/README.md`](openers/README.md)).
+4. **Opener, workspace and message.** Write a new opener for this conversation by the routine in [`openers/README.md`](openers/README.md#write-a-new-opener-for-every-conversation): never an example as is, never the form or field of the previous one, and reword the footer too. On Drive, `drive_workspace.py <tag> evidence --task TASK.md --repo <repository> --preface task/en/preface.md --opener <new opener>.md --footer <reworded footer-drive.md> --out message.md` creates the folder, writes `TASK.md` and prints the message. `--repo` fills `{{PROJECT}}` and `{{COMMIT}}` from the published mirror and stops if the mirror is behind the repository's HEAD (push it again). The command also refuses a task with unfilled placeholders, and a message that does not name the task folder and file ([`tools/manuals/workspace.md`](tools/manuals/workspace.md)).
 5. **Before sending, check** what the tools cannot: every folder the task names exists, and the task text is private-data clean.
-6. **Send** on the chosen route. **Log every Pro message** in the ledger, follow-ups included.
+6. **Send** on the chosen route. **Log every Pro message** in the ledger, follow-ups included; for a new conversation put the opener's form and field in the note (`--note "opener: …"`), so the next one can differ.
 7. **Watch** ([`tools/manuals/watch.md`](tools/manuals/watch.md)). Start the delivery watcher with its `test.txt` start check and the stall watchdog as soon as the message is sent, and the local-run listener if requests are allowed. When one wakes you, handle it and start it again. Look at the chat about 5 minutes after sending (approval card), then every 30 minutes or so.
 8. **Steer and add work** ([`tools/manuals/interject.md`](tools/manuals/interject.md)). Writing to `REQUEST.md` costs no message. When stage ZIPs show steady progress and the list is running low, add more work. Do not add more after `DONE.txt` or a final delivery.
 9. **Answer local-run requests** ([`tools/manuals/local-run.md`](tools/manuals/local-run.md)) when they need this machine (a window, GPU, real device, local platform). Do not run things the web side can run in its own sandbox or with its own subagents.
@@ -119,7 +119,7 @@ Known tendencies: line references and quotes are usually right, and judgements a
 
 | Path | What |
 |---|---|
-| [`openers/`](openers/) | Opener bodies, continuation and restart, footers per route, how to write your own |
+| [`openers/`](openers/) | Five example openers of different forms, continuation and restart, footers per route, the routine for writing a new opener each time |
 | [`task/`](task/) | Preface, task skeleton, project header (English and Chinese) |
 | [`send/`](send/) | By hand, Voyager CLI, browser relay with troubleshooting |
 | [`tools/`](tools/) | Scripts, sandbox request channel, manuals, Drive approval auto-click, Pro ledger |

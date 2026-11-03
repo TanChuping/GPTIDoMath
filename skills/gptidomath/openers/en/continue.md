@@ -1,5 +1,5 @@
 <!-- Continuation body: the same conversation, the next part ({{ROUND}} = part number). Pair it with footer-drive-continue.md
-or footer-package-continue.md. Fits after any of the four openers. Rewrite it in your own words before use. -->
+or footer-package-continue.md. Fits after any opener. Like the openers, write a new one each time; this file shows what it must say. -->
 Mathematical research session · part {{ROUND}}
 
 We pick up where the last part stopped. Its results were more interesting than we expected. Several of the conjectured invariants became lemmas. A few resisted. And the way they resisted says something: the difficulty does not seem to live in any single step, but in how the steps compose. Each local estimate closes, and the constants even come out suspiciously good. Yet the global statement still slips away, as if a structural identity were doing work we have not written down, or an obstruction were hiding in the gluing rather than in the pieces.

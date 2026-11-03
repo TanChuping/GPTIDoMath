@@ -23,7 +23,7 @@ The simplest setup, with nothing to install. Your agent builds one zip with the 
    python3 <skill>/tools/scripts/drive_mirror.py pack --repo . --task TASK.md --out ./send
    ```
    It exports the last commit (uncommitted changes are not included), redacts what it recognises, adds `INDEX/` and puts `TASK.md` at the archive root. Check the printed size and the privacy notes in [`../tools/manuals/mirror.md`](../tools/manuals/mirror.md) before uploading anything.
-3. **Your agent writes the message:** one opener body from [`../openers/`](../openers/) plus `footer-package.md`, with `{{PACKAGE}}` replaced by the zip's name.
+3. **Your agent writes the message:** a new opener by the routine in [`../openers/README.md`](../openers/README.md#write-a-new-opener-for-every-conversation), plus `footer-package.md` reworded, with `{{PACKAGE}}` replaced by the zip's name.
 4. **You send it:** new chat, Pro, attach the zip, paste the message, send.
 5. **Collect promptly:** download every ZIP link as soon as it appears; files in ChatGPT's sandbox stop being downloadable a few minutes after a turn ends. Unzip into a new empty folder and hand it to your agent.
 
