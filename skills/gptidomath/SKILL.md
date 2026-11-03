@@ -21,7 +21,7 @@ Explain in two or three sentences what this does, then ask the questions below, 
 
 | Choice | What the user does | Extra setup | Pros | Cons |
 |---|---|---|---|---|
-| **By hand** ([`send/by-hand.md`](send/by-hand.md)) | Pastes the message into ChatGPT and clicks the Drive approval card | None | Nothing to install; the user sees everything | User must be at the computer to send and approve |
+| **By hand** ([`send/by-hand.md`](send/by-hand.md)) | Pastes the message into ChatGPT and clicks the Drive approval card | None | Nothing to install; the user sees everything | User must be at the computer to send and approve; steering and local runs still need this agent session kept open |
 | **Voyager CLI** ([`send/voyager-cli.md`](send/voyager-cli.md)) | Installs it once and pairs it | Node.js, Voyager CLI, the Voyager browser extension | Fully scriptable; several jobs at once | Third-party tool to keep updated; depends on its extension keeping up with ChatGPT |
 | **You, through the browser** ([`send/browser-relay.md`](send/browser-relay.md)) | Lets you act on chatgpt.com | A browser-control extension or computer use for you | Most tested; you adapt when the page changes | Costs some of your tokens for watching; uses the user's logged-in browser |
 
@@ -32,6 +32,16 @@ Explain in two or three sentences what this does, then ask the questions below, 
 | **Google Drive** (recommended) | ChatGPT's Google Drive connector, plus Google Drive for desktop or rclone on this machine | Large material once, reused by every chat; steering, local-run requests and delivery wake-up work | One-time setup; sync delay; the first write in each chat shows an approval card |
 | **Uploaded package** | None | Simplest | No steering, no local-run requests, no wake-up; re-upload for every follow-up; size limits |
 | **GitHub repository** | ChatGPT's GitHub app | Version-controlled tasks | **Untested by the authors**: delivery, steering and wake-up need scripts you write yourself |
+
+Then tell the user plainly what their combination supports. Who sends does not matter here; the material route and whether you keep running do:
+
+| | Steering a running job (`REQUEST.md`) | Local-run requests | Wake-up on delivery / stall |
+|---|---|---|---|
+| **Drive**, any sender | Yes. Whenever the user asks, you write the request. | Yes, only while you are running with the listener started | Yes, only while you are running with the watchers started |
+| **Uploaded package**, any sender | No: a change means a new message | No | No: the user downloads the ZIPs by hand |
+| **GitHub** | Untested | Untested | Untested |
+
+So "send by hand + Drive" keeps every feature, provided this agent session stays open while the job runs. If the user closes it, steering waits until they reopen it, local-run requests go unanswered (the web side lists them in its notes and carries on), and nobody is woken.
 
 **Q3. Which language?** Openers exist in English and Chinese ([`openers/en`](openers/en), [`openers/zh`](openers/zh)); the task file says which language to answer in.
 

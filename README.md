@@ -43,7 +43,7 @@ Your agent asks you this during setup. Two choices: **who sends** and **how the 
 
 | Who sends | You need | Good | Not so good |
 |---|---|---|---|
-| **You, by hand** | Nothing extra | Simple; you see everything | You must be there to send and to approve the Drive card |
+| **You, by hand** | Nothing extra | Simple; you see everything | You must be there to send and to approve the Drive card; keep your agent open while the job runs, or nobody steers it or answers its requests |
 | **[Voyager CLI](https://github.com/voyager-crew/voyager-cli)** (a separate open-source tool) | Node.js, Voyager CLI, the Voyager browser extension, paired | Fully automatic from the terminal; several jobs at once | Third-party tool to install and keep updated |
 | **Your agent, through the browser** | A browser-control extension for your agent (for example Claude in Chrome, or Codex's browser extension) | Most tested; the agent adapts when ChatGPT's page changes | Uses some of your agent's tokens; acts in your logged-in browser |
 
@@ -60,6 +60,8 @@ Your agent asks you this during setup. Two choices: **who sends** and **how the 
 - You can click it by hand.
 
 None is guaranteed, so whoever sends should look at the chat about 5 minutes after sending.
+
+**What each combination gets.** Steering, local-run requests and wake-up depend on the material route, not on who sends. With Drive you get all three, as long as your agent stays open while the job runs. With an uploaded zip you get none of them.
 
 ## How this differs from reverse proxies and MCP bridges
 
