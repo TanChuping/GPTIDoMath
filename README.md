@@ -61,6 +61,19 @@ Your agent asks you this during setup. Two choices: **who sends** and **how the 
 
 None is guaranteed, so whoever sends should look at the chat about 5 minutes after sending.
 
+## How this differs from reverse proxies and MCP bridges
+
+Two other kinds of projects are often mentioned together with this one. Projects that reverse-proxy the ChatGPT web app turn it into an unofficial API. MCP bridges connect ChatGPT to tools running on your computer. GPTIDoMath is neither.
+
+| | Reverse proxies of the web app | MCP bridges to your computer | GPTIDoMath |
+|---|---|---|---|
+| **How ChatGPT is used** | Session cookies or tokens are taken out of the web app and replayed as an unofficial API, often through someone else's server | The normal web app, plus a connector or tunnel that exposes tools on your computer | The normal web app, used the way a person uses it, plus ChatGPT's own Google Drive connector |
+| **Quota** | Often used to get API-style access the subscription does not include, or shared between people | Normal | Normal: every message counts against your own Pro allowance. We only fit more work into each message |
+| **What the model can do on your computer** | — | Run commands or read files directly, as far as the bridge allows | Nothing directly. It can only write files into one Drive folder. Your local agent reads its requests, decides, and runs only what it judges appropriate; the tools never execute a command found in a request |
+| **Main risks** | Account bans, leaked session tokens, breakage when unofficial endpoints change | A remote model, or instructions planted in something it read, acting on your machine; an exposed tunnel | What you choose to upload; the Drive access you grant; browser automation in your own profile (only on the automated routes) |
+
+In short: no reverse engineering, no extracted credentials, no unofficial API, no shared accounts, and no lifted limits. What changes is how the task is written and how much work goes into one message. Sending by hand uses ChatGPT exactly as anyone does. The automated senders (Voyager CLI, a browser agent) operate your own browser; whether that fits the terms you agreed to is for you to judge (see the [disclaimer](#disclaimer)).
+
 ## How a long run works
 
 - **One message, hours of work.** ChatGPT Pro is billed per message, not per token. A five-minute question and a five-hour job cost the same, so put a whole batch of work into one task.

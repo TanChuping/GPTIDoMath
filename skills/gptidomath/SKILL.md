@@ -11,7 +11,7 @@ ChatGPT Pro on the web is billed per message, not per token, and one message can
 - The **real task** waits in a file, `TASK.md`, written from [`task/`](task/) and placed on Google Drive, in an uploaded package, or in a repository.
 - **Tools** ([`tools/`](tools/)) publish the repository, create the task folder, steer a running job without a new message, let the web side ask this machine to run things, wake you on delivery or stall, count Pro messages, and answer the Drive approval card.
 
-This is experimental (see the disclaimer in the repository README). Talk to the user in their language, keep it plain, and never make them read these files: ask, explain the trade-off, then do the work.
+This is experimental (see the disclaimer in the repository README). Talk to the user in their language, keep it plain, and never make them read these files: ask, explain the trade-off, then do the work. If the user asks how this compares with reverse proxies of the web app or MCP bridges to their computer, the repository README has a section on it: normal web use and normal quota, and the web side never gets a direct line into this machine.
 
 ## 1. First-time setup: interview the user
 
