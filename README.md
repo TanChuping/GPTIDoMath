@@ -14,9 +14,9 @@ English | [简体中文](README.zh-CN.md)
    ```sh
    git clone https://github.com/TanChuping/GPTIDoMath
    # Claude Code
-   cp -r GPTIDoMath/skills/gptidomath ~/.claude/skills/
+   mkdir -p ~/.claude/skills && cp -r GPTIDoMath/skills/gptidomath ~/.claude/skills/
    # Codex
-   cp -r GPTIDoMath/skills/gptidomath ~/.codex/skills/
+   mkdir -p ~/.codex/skills && cp -r GPTIDoMath/skills/gptidomath ~/.codex/skills/
    ```
    With the [skills CLI](https://github.com/vercel-labs/skills): `npx skills add TanChuping/GPTIDoMath`. Any other agent: tell it to read `skills/gptidomath/SKILL.md`.
 3. Tell your agent: **"Set up GPTIDoMath for me."** It asks you a few questions (who sends the message, whether to use Google Drive, which language), explains the pros and cons of each choice, installs and tests what you picked, and runs a small trial.

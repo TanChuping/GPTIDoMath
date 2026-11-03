@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         label = path.relative_to(here.parent).as_posix()
         try:
             result = subprocess.run([sys.executable, "-B", str(path), "--selftest"],
-                                    cwd=here.parent, env=env, capture_output=True,
+                                    cwd=here.parent, env=env, capture_output=True, stdin=subprocess.DEVNULL,
                                     text=True, encoding="utf-8", errors="replace", timeout=180)
             for line in (result.stdout + result.stderr).splitlines():
                 print(f"{label}: {line}", flush=True)

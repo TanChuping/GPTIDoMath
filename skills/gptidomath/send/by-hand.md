@@ -31,6 +31,6 @@ Next part in the same chat: attach the new `TASK-2.md` (and a new package only i
 
 ## Either way
 
-- Every message you send to Pro counts against your quota, follow-ups included. Tell your agent so it can log it (`pro_ledger.py add <tag> --by user`).
+- Every message you send to Pro counts against your quota, follow-ups included. Tell your agent so it can log it (`pro_ledger.py add <tag> --note "sent by user"`).
 - **ChatGPT Projects** are another way to hand over material: files added to a project are readable by every chat in it.
 - **GitHub** material is untested by the authors; see [`browser-relay.md`](browser-relay.md#material-from-github-untested).

@@ -24,7 +24,8 @@ For an existing IPython kernel:
   runpy.run_path(str(Path.home()/'.request-channel/channel.py'))['register_ipython_hook'](get_ipython())
 Adjust these paths when using a custom state directory.
 
-Hooks remind at command/cell boundaries after 15 minutes; due also checks the local timer.
+Hooks remind after 15 minutes when a new Bash process starts or an IPython cell runs; an already
+running Bash shell is checked only when activated, so call `python3 channel.py due` at checkpoints there.
 Follow PROMPT-BLOCK.md for request checks. If hooks fail, keep checking at task checkpoints.
 
 This is a local reminder, not a Drive reader or a timer that interrupts a model.

@@ -18,19 +18,19 @@ CONVERSATION = re.compile(r"chatgpt\.com/c/([a-zA-Z0-9-]+)")
 QUIET = timedelta(minutes=3)
 
 
-def main():
-    payload = json.load(sys.stdin)
+def handle(payload):
+    """Return the hook's JSON reply for one PostToolUse payload, or None when it stays silent."""
     configured = os.environ.get("GPTIDOMATH_BROWSER_TOOLS")
     tools = tuple(part.strip() for part in configured.split(",")) if configured else DEFAULT_TOOLS
     if payload.get("tool_name") not in tools:
-        return
+        return None
     tool_input = json.dumps(payload.get("tool_input", {}), ensure_ascii=False)
     if "send-button" not in tool_input:
-        return
+        return None
     response = json.dumps(payload.get("tool_response", ""), ensure_ascii=False)
     match = CONVERSATION.search(response) or CONVERSATION.search(tool_input)
     if not match:
-        return
+        return None
     conversation = match.group(1)
     at = ledger.now()
     state_path = ledger.data_home() / "pro-send-hook-state.json"
@@ -42,7 +42,7 @@ def main():
         state = {}
     try:
         if conversation in state and at - ledger.parse_time(state[conversation]) < QUIET:
-            return
+            return None
     except (TypeError, ValueError):
         pass
     previous = "No recorded send for this conversation."
@@ -66,14 +66,35 @@ def main():
         "Follow-ups, corrections, and requests to package completed work each count. "
         "Use --tier for non-Pro efforts. This hook only reminds; it never logs a send."
     )
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse",
-                                            "additionalContext": message}}, ensure_ascii=False))
+    return json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse",
+                                              "additionalContext": message}}, ensure_ascii=False)
+
+
+def selftest():
+    import tempfile
+    with tempfile.TemporaryDirectory() as home:
+        os.environ["GPTIDOMATH_HOME"] = home
+        os.environ.pop("GPTIDOMATH_BROWSER_TOOLS", None)
+        send = {"tool_name": DEFAULT_TOOLS[0], "tool_input": {"text": "document.querySelector('[data-testid=send-button]').click()"},
+                "tool_response": "https://chatgpt.com/c/abc-123"}
+        reply = handle(send)
+        assert reply and "abc-123" in json.loads(reply)["hookSpecificOutput"]["additionalContext"]
+        assert handle(send) is None, "second reminder within three minutes"
+        assert handle(dict(send, tool_name="other_tool")) is None
+        assert handle(dict(send, tool_input={"text": "scroll"})) is None
+        assert handle(dict(send, tool_response="no link")) is None
+    print("selftest PASS: pro_send_hook (reminder, throttle, tool filter, send filter, missing link)")
+    return 0
 
 
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if sys.argv[1:] == ["--selftest"]:
+        sys.exit(selftest())
     try:
-        main()
+        reply = handle(json.load(sys.stdin))
+        if reply:
+            print(reply)
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
         pass  # A reminder must not interrupt the browser operation.

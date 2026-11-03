@@ -24,7 +24,7 @@ BLOCK_PATTERNS = [
 
 
 
-RULES_VERSION = 3  # Part of the published policy fingerprint: raise it when rules change.
+RULES_VERSION = 4  # Part of the published policy fingerprint: raise it when rules change.
 GENERIC_IDS = {"admin", "user", "users", "root", "default", "public", "guest", "shared"}
 CODE_EXT = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".cs", ".c", ".cpp", ".cc", ".h", ".hpp", ".java",
             ".kt", ".kts", ".go", ".rs", ".rb", ".php", ".swift", ".scala", ".m", ".mm", ".lua", ".dart", ".vue",
@@ -47,6 +47,12 @@ PLACEHOLDER = re.compile(r'(?i)^(?:x{3,}|\*{3,}|\.{3}|\u2026|changeme|change[_-]
 VAR_REF = re.compile(r'''^(?:\$\{[A-Za-z_]\w*\}|\$[A-Za-z_]\w*|%[A-Za-z_]\w*%|\$?\{\{\s*[\w.\[\]'"-]+\s*\}\}|\{[A-Za-z_]\w*\}|\$env:[A-Za-z_]\w*|process\.env\.[A-Za-z_]\w*|process\.env\[["'][\w-]+["']\]|os\.environ\[["'][\w-]+["']\]|os\.environ\.get\(["'][\w-]+["']\)|os\.getenv\(["'][\w-]+["']\))$''')
 # Unquoted right-hand sides that are code, not literals: calls, attribute paths, lookups, YAML syntax.
 NON_LITERAL = re.compile(r'''^(?:\$\(.*\)|`.*`|[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\(.*\)|[A-Za-z_$][A-Za-z_$]*(?:\.[A-Za-z_$][A-Za-z_$]*)+|[A-Za-z_$][\w$.]*\[["']?[\w-]+["']?\]|![A-Za-z][^\r\n]*|[|>][+-]?\d*|[{\[]|\{\}|\[\])$''')
+# Credentials the key=value rules cannot see: URL userinfo, npm auth lines, connection-string passwords.
+CREDENTIAL_SLOTS = [
+    re.compile(r"""(?i)(?P<pre>\b[a-z][a-z0-9+.-]{1,20}://[^\s:/@"'`<>]*:)(?P<val>[^\s@/"'`<>]+)(?=@)"""),
+    re.compile(r"""(?im)(?P<pre>(?:^|:)[ \t]*_(?:authToken|auth|password)[ \t]*=[ \t]*)(?P<val>[^\s"']+)"""),
+    re.compile(r"""(?i)(?P<pre>[;"'][ \t]*(?:password|pwd)[ \t]*=[ \t]*)(?P<val>[^;"'\r\n]+)(?=[;"'])"""),
+]
 CONCAT = re.compile(r'[ \t]*\+')
 TYPE_NAMES = {'string', 'str', 'number', 'int', 'integer', 'float', 'bool', 'boolean', 'any', 'unknown', 'object', 'bytes'}
 _KEY_PART = re.compile(r'[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+')
@@ -171,6 +177,14 @@ class Redactor:
                 rec('identity' if rep == '<user>' else 'personal', m)
                 return rep
             s_cur = pat.sub(word, s_cur)
+        for pat in CREDENTIAL_SLOTS:
+
+            def slot(m):
+                if _exempt(m.group('val')) or NON_LITERAL.match(m.group('val')):
+                    return m.group(0)
+                rec('secret-assign', m)
+                return m.group('pre') + '<redacted:secret>'
+            s_cur = pat.sub(slot, s_cur)
         s_cur = EMAIL.sub(lambda m: (rec('email', m), '<email>')[1], s_cur)
         for kind, pat in KEY_SHAPES:
             s_cur = pat.sub(lambda m, k=kind: (rec(k, m), f'<redacted:{k}>')[1], s_cur)
@@ -278,6 +292,11 @@ def selftest() -> int:
         ('{TU}=Zq7crlf\r\nNEXT=1\r\n', False), ('self.{T} = "Zq7code"', True), ('{P}: str = "Zq7typed"', True),
         ('{TU}=${HOME}Zq7', False), ('set {PU}=Zq7win', False), ('client_{S}: Zq7client', False),
         ('os.environ["{K}"] = "Zq7env"', True), ('{K}=Zq7', False), ('{P}: correct horse Zq7', False),
+        ('DATABASE_URL=postgres://demo:Zq7pg@db.example.invalid:5432/app', False),
+        ('REDIS_URL=redis://:Zq7redis@localhost:6379', False), ('url = "mysql://root:Zq7my@db/x"', True),
+        ('//registry.npmjs.org/:_authToken=Zq7npm', False), ('_auth=Zq7base64', False),
+        ('"connectionString": "Server=db;Password=Zq7conn;User Id=demo"', False),
+        ('conn = "Server=db;Pwd=Zq7pwd;"', True),
     ]
     for line, code in leaks:
         out, hits, _ = red.redact(f(line), code)
@@ -293,7 +312,8 @@ def selftest() -> int:
         ('{T}izer = "bert-base"', True), ('<input type="{P}" name="{P}">', False), ('{K}: ${{ secrets.X }}', False),
         ('"{T}Expired": "Your session {T} expired"', False), ('{TU}=$(cat ./file)', False), ('{T}: |', False),
         ('{P} = "{pw}"', True), ('if {T} == "abc":', True), ('{P} = input()', False),
-        ('{S} = "abcd" + "efgh"', True),
+        ('{S} = "abcd" + "efgh"', True), ('url = "postgres://u:${DB_PASS}@db/x"', True),
+        ('https://example.invalid:8080/path@v2', False), ('pwd = os.getcwd()', True),
     ]
     for line, code in keep:
         text = f(line)

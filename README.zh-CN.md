@@ -14,9 +14,9 @@
    ```sh
    git clone https://github.com/TanChuping/GPTIDoMath
    # Claude Code
-   cp -r GPTIDoMath/skills/gptidomath ~/.claude/skills/
+   mkdir -p ~/.claude/skills && cp -r GPTIDoMath/skills/gptidomath ~/.claude/skills/
    # Codex
-   cp -r GPTIDoMath/skills/gptidomath ~/.codex/skills/
+   mkdir -p ~/.codex/skills && cp -r GPTIDoMath/skills/gptidomath ~/.codex/skills/
    ```
    用 [skills CLI](https://github.com/vercel-labs/skills) 的话：`npx skills add TanChuping/GPTIDoMath`。别的 agent：让它去读 `skills/gptidomath/SKILL.md`。
 3. 对你的 agent 说：**「帮我配好 GPTIDoMath。」** 它会问你几个问题（谁来发消息、用不用 Google Drive、用什么语言），把每个选项的好处和代价讲清楚，装好并测试你选的东西，再跑一个小试验。

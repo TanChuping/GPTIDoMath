@@ -47,7 +47,7 @@ So "send by hand + Drive" keeps every feature, provided this agent session stays
 
 **Q4. Extras.** The Pro ledger is recommended: ChatGPT does not show how many messages are left ([`tools/manuals/pro-ledger.md`](tools/manuals/pro-ledger.md)). For the Drive approval card, pick one helper: the GPT Voyager extension's opt-in auto-allow, Voyager CLI's `--approve-apps always`, this repository's [`tools/drive-auth-autoclick/`](tools/drive-auth-autoclick/), or clicking by hand.
 
-Then set up what was chosen:
+Then set up what was chosen. Commands below run from this skill's folder (the one containing this file):
 
 1. Copy `tools/config.example.json` to `~/.gptidomath/config.json` and fill in the workspace (the local folder that syncs to Drive's `AI-workspace/`) and any private terms to redact.
 2. Run `python3 tools/scripts/selftest_all.py`. Everything must pass. Fix or adapt the tools for this OS (each manual has an "Adapt it" section), then run it again.

@@ -56,7 +56,7 @@ build/ export-ignore
 build/** export-ignore
 ```
 
-Put private names, identifiers, or literal secrets in the local config's `redact` list. The text redactor also masks home paths, local/Git identities, emails, credential patterns, and secret assignments. Inspect `--out` before publishing: patterns cannot infer every private fact. Filename paths and binary content need review too.
+Exclude credential files unless the task truly needs them: `.env*`, `.npmrc`, `.pypirc`, `.netrc`, `credentials*.json`, `*.pem`, `*.key`, `id_rsa*`, cloud CLI config. Put private names, identifiers, or literal secrets in the local config's `redact` list. The text redactor also masks home paths, local/Git identities, emails, credential patterns, and secret assignments. Inspect `--out` before publishing: patterns cannot infer every private fact. Filename paths and binary content need review too.
 
 Files whose names or encodings cannot be sanitized safely are kept back and listed; sensitive path strings are withheld from the shared report. `--report` gives your agent the full paths locally. Binaries are not rewritten: matching identity/config terms of at least five characters keep the entire file back. Binary contents do not get the text credential scan, and compressed contents are not inspected. Use `export-ignore` for binaries that should never leave the machine. Symbolic links, submodules, and external assets need explicit preparation.
 
