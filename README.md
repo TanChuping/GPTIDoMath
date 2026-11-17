@@ -97,7 +97,7 @@ In short: no reverse engineering, no extracted credentials, no unofficial API, n
 
 - Longest single session on the author's machine: nearly **11 hours** (11 h 30 min on one message). Typical: **3–4 hours**, stable. Occasionally a session still drops at around **70 minutes**.
 - A read-heavy job with subagents read about **200,000 lines** of code in one message.
-- Other people using the same flow report a **20-hour** session and **7 subagents** running at once. The author has not reproduced either.
+- Other people using the same flow report a **27 hour and 58 minutes** session and **7 subagents** running at once. The author has not reproduced either.
 
 ## What you will still see
 
